@@ -20,7 +20,18 @@ class ProductServiceStack(Stack):
             runtime=lambda_.Runtime.PYTHON_3_12,
             handler="get_products_list.lambda_handler",
             code=lambda_.Code.from_asset("lambda"),
-            timeout=Duration.seconds(10),
+            memory_size=128,
+            timeout=Duration.seconds(5),
+        )
+
+        get_product_by_id_function = lambda_.Function(
+            self,
+            "GetProductByIdLambda",
+            runtime=lambda_.Runtime.PYTHON_3_12,
+            handler="get_products_by_id.lambda_handler",
+            code=lambda_.Code.from_asset("lambda"),
+            memory_size=128,
+            timeout=Duration.seconds(5),
         )
 
         # Define API Gateway
@@ -40,6 +51,15 @@ class ProductServiceStack(Stack):
                 handler=get_products_list_function
             ),
         ),
+
+        api.add_routes(
+            path="/products/{productId}",
+            methods=[api_gateway.HttpMethod.GET],
+            integration=integrations.HttpLambdaIntegration(
+                id="get_products_by_id",
+                handler=get_product_by_id_function,
+            ),
+        )
 
         CfnOutput(self, "HttpApiUrl", value=api.url or "Unknown")
 
