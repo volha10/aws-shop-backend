@@ -41,6 +41,14 @@ class ProductServiceStack(Stack):
             "ProductServiceApi",
             api_name="ProductServiceAPI",
             description="HTTP API for Product Service",
+            cors_preflight=api_gateway.CorsPreflightOptions(
+                allow_origins=[
+                    "https://d3ewkax4tdopxb.cloudfront.net",
+                    "http://localhost:3000"
+                ],  # Allow CloudFront domain
+                #allow_methods=["GET"],
+                allow_headers=["*"]
+            )
         )
 
         api.add_routes(
