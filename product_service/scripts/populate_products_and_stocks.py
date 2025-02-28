@@ -4,11 +4,12 @@ import random
 
 from mock_products import PRODUCTS
 
+
 # Initialize DynamoDB resource
 dynamodb = boto3.resource("dynamodb")
 
-PRODUCTS_TABLE = "products"
-STOCKS_TABLE = "stocks"
+PRODUCTS_TABLE_NAME = "products"
+STOCKS_TABLE_NAME = "stocks"
 
 
 def delete_all_items(table_name, primary_key, sort_key=None):
@@ -38,18 +39,18 @@ def delete_all_items(table_name, primary_key, sort_key=None):
 
 
 def delete_all_products():
-    delete_all_items(PRODUCTS_TABLE, "id", sort_key="title")
+    delete_all_items(PRODUCTS_TABLE_NAME, "id", sort_key="title")
 
 
 def delete_all_stocks():
-    delete_all_items(STOCKS_TABLE, "product_id")
+    delete_all_items(STOCKS_TABLE_NAME, "product_id")
 
 
 def populate_products():
     """
     Populates the 'products' table with sample product data.
     """
-    table = dynamodb.Table(PRODUCTS_TABLE)
+    table = dynamodb.Table(PRODUCTS_TABLE_NAME)
 
     with table.batch_writer() as batch:
         for product in PRODUCTS:
@@ -63,15 +64,15 @@ def populate_products():
 
             batch.put_item(Item=item)
 
-    print(f"Added {len(PRODUCTS)} products to {PRODUCTS_TABLE}.")
+    print(f"Added {len(PRODUCTS)} products to {PRODUCTS_TABLE_NAME}.")
 
 
 def populate_stocks():
     """
     Populates the 'stocks' table with stock counts for each product.
     """
-    products_table = dynamodb.Table(PRODUCTS_TABLE)
-    stocks_table = dynamodb.Table(STOCKS_TABLE)
+    products_table = dynamodb.Table(PRODUCTS_TABLE_NAME)
+    stocks_table = dynamodb.Table(STOCKS_TABLE_NAME)
 
     # Scan products to get product IDs
     response = products_table.scan()
@@ -79,14 +80,11 @@ def populate_stocks():
 
     with stocks_table.batch_writer() as batch:
         for product in products:
-            stock_item = {
-                "product_id": product["id"],
-                "count": random.randint(1, 50)
-            }
+            stock_item = {"product_id": product["id"], "count": random.randint(0, 50)}
 
             batch.put_item(Item=stock_item)
 
-    print(f"Added stock data for {len(products)} products to {STOCKS_TABLE}.")
+    print(f"Added stock data for {len(products)} products to {STOCKS_TABLE_NAME}.")
 
 
 if __name__ == "__main__":
