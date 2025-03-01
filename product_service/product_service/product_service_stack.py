@@ -7,6 +7,7 @@ from aws_cdk import (
     aws_lambda as lambda_,
     aws_dynamodb as dynamodb,
 )
+#from aws_cdk.aws_apigatewayv2 import CorsHttpMethod
 from constructs import Construct
 
 PRODUCTS_TABLE_NAME = "products"
@@ -90,9 +91,11 @@ class ProductServiceStack(Stack):
                 allow_origins=[
                     "https://d3ewkax4tdopxb.cloudfront.net",
                     "http://localhost:3000",
+                    "https://editor.swagger.io",
                 ],  # Allow CloudFront domain
-                # allow_methods=["GET"],
-                allow_headers=["*"],
+                allow_methods=[api_gateway.CorsHttpMethod.GET, api_gateway.CorsHttpMethod.POST],
+                allow_headers=["Content-Type"],
+                max_age=Duration.days(1)
             ),
         )
 
