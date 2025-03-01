@@ -18,10 +18,11 @@ stocks_table = dynamodb.Table(STOCKS_TABLE_NAME)
 
 def lambda_handler(event, context):
     """
-    Fetches a product and its associated stock count.
+    AWS Lambda handler for fetching a product and its associated stock count.
 
     :param event: The event data passed to the Lambda.
     :param context: The context object for the Lambda function.
+
     :return: API Gateway response.
     """
     try:
@@ -58,7 +59,9 @@ def lambda_handler(event, context):
 def get_product_with_stock(product_id):
     """
     Fetches a product and its associated stock count from DynamoDB.
+
     :param product_id: The ID of the product to retrieve.
+
     :return: Product details merged with stock count, or None if not found.
     """
     product_response = products_table.get_item(Key={"id": product_id})

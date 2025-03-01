@@ -12,10 +12,11 @@ STOCKS_TABLE_NAME = os.getenv("STOCKS_TABLE_NAME")
 
 def lambda_handler(event, _):
     """
-    Fetches all products and joins them with stock count.
+    AWS Lambda handler for fetching all products and joins them with stock count.
 
     :param event: The event data passed to the Lambda.
     :param _: The context object for the Lambda function.
+
     :return: API Gateway response.
     """
 

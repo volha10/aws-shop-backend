@@ -62,6 +62,23 @@ class ProductServiceStack(Stack):
         products_table.grant_read_data(get_product_by_id_function)
         stocks_table.grant_read_data(get_product_by_id_function)
 
+        # Create createProduct Lambda function
+        create_product_function = lambda_.Function(
+            self,
+            "CreateProductLambda",
+            runtime=lambda_.Runtime.PYTHON_3_12,
+            handler="create_product.lambda_handler",
+            code=lambda_.Code.from_asset("lambda_func"),
+            environment={
+                "PRODUCTS_TABLE_NAME": PRODUCTS_TABLE_NAME,
+                "STOCKS_TABLE_NAME": STOCKS_TABLE_NAME,
+            },
+        )
+
+        # Grant Lambda permissions to write to DynamoDB tables
+        products_table.grant_write_data(create_product_function)
+        stocks_table.grant_write_data(create_product_function)
+
         # Define API Gateway
 
         api = api_gateway.HttpApi(
@@ -96,4 +113,12 @@ class ProductServiceStack(Stack):
             ),
         )
 
+        api.add_routes(
+            path="/products",
+            methods=[api_gateway.HttpMethod.POST],
+            integration=integrations.HttpLambdaIntegration(
+                "create_product",
+                create_product_function
+            ),
+        )
         CfnOutput(self, "HttpApiUrl", value=api.url or "Unknown")
