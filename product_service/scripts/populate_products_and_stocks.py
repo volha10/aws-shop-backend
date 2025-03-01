@@ -12,12 +12,11 @@ PRODUCTS_TABLE_NAME = "products"
 STOCKS_TABLE_NAME = "stocks"
 
 
-def delete_all_items(table_name, primary_key, sort_key=None):
+def delete_all_items(table_name, primary_key):
     """
     Deletes all items from a given DynamoDB table using batch_writer().
     :param table_name: The name of the table.
     :param primary_key: The primary key attribute of the table.
-    :param sort_key: Optional sort key (if using composite key).
     """
     table = dynamodb.Table(table_name)
 
@@ -30,16 +29,13 @@ def delete_all_items(table_name, primary_key, sort_key=None):
             print(item)
             key = {primary_key: item[primary_key]}
 
-            if sort_key:
-                key[sort_key] = item[sort_key]
-
             batch.delete_item(Key=key)
 
     print(f"Deleted {len(items)} items from {table_name}.")
 
 
 def delete_all_products():
-    delete_all_items(PRODUCTS_TABLE_NAME, "id", sort_key="title")
+    delete_all_items(PRODUCTS_TABLE_NAME, "id")
 
 
 def delete_all_stocks():
@@ -54,9 +50,8 @@ def populate_products():
 
     with table.batch_writer() as batch:
         for product in PRODUCTS:
-            product_id = str(uuid.uuid4())
             item = {
-                "id": product_id,
+                "id": product["id"],
                 "title": product["title"],
                 "description": product["description"],
                 "price": product["price"],
@@ -90,8 +85,8 @@ def populate_stocks():
 if __name__ == "__main__":
     print("Deleting old data...")
     delete_all_products()
-    delete_all_stocks()
+    # delete_all_stocks()
 
     print("\nPopulating new data...")
     populate_products()
-    populate_stocks()
+    # populate_stocks()

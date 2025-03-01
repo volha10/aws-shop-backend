@@ -4,8 +4,6 @@ import os
 
 import boto3
 
-from mock_products import PRODUCTS
-
 dynamodb = boto3.resource("dynamodb")
 
 PRODUCTS_TABLE_NAME = os.getenv("PRODUCTS_TABLE_NAME")
@@ -13,7 +11,14 @@ STOCKS_TABLE_NAME = os.getenv("STOCKS_TABLE_NAME")
 
 
 def lambda_handler(event, _):
-    """Fetches all products and joins them with stock count."""
+    """
+    Fetches all products and joins them with stock count.
+
+    :param event: The event data passed to the Lambda.
+    :param _: The context object for the Lambda function.
+    :return: API Gateway response.
+    """
+
     try:
         print("Request received:", event)
 
@@ -27,11 +32,11 @@ def lambda_handler(event, _):
             },
         }
     except Exception as e:
-        logging.exception(f"Unexpected error: {str(e)}")
+        logging.exception(f"Error: {str(e)}")
 
         return {
             "statusCode": 500,
-            "body": json.dumps({"error": str(e)}),
+            "body": json.dumps({"message": "An unexpected error occurred."}),
             "headers": {
                 "Content-Type": "application/json",
             },

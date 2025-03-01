@@ -52,7 +52,15 @@ class ProductServiceStack(Stack):
             code=lambda_.Code.from_asset("lambda_func"),
             memory_size=128,
             timeout=Duration.seconds(5),
+            environment={
+                "PRODUCTS_TABLE_NAME": PRODUCTS_TABLE_NAME,
+                "STOCKS_TABLE_NAME": STOCKS_TABLE_NAME,
+            },
         )
+
+        # Grant Lambda permissions to read from the tables
+        products_table.grant_read_data(get_product_by_id_function)
+        stocks_table.grant_read_data(get_product_by_id_function)
 
         # Define API Gateway
 
