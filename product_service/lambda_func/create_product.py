@@ -32,33 +32,26 @@ def lambda_handler(event, _):
 
         body = json.loads(event.get("body", "{}"))
 
-        # Create a new product
         product = create_product(body)
 
-        return {
-            "statusCode": 201,
-            "body": json.dumps(product)
-        }
+        return {"statusCode": 201, "body": json.dumps(product)}
 
     except ValueError as error:
         logger.error(f"Validation error: {error}")
-        return {
-            "statusCode": 400,
-            "body": json.dumps({"message": str(error)})
-        }
+        return {"statusCode": 400, "body": json.dumps({"message": str(error)})}
 
     except ClientError as error:
         logger.error(f"DynamoDB transaction error: {error}")
         return {
             "statusCode": 500,
-            "body": json.dumps({"message": "Internal server error"})
+            "body": json.dumps({"message": "Internal server error"}),
         }
 
     except Exception as error:
         logger.exception(f"Unexpected error: {error}")
         return {
             "statusCode": 500,
-            "body": json.dumps({"message": "An unexpected error occurred."})
+            "body": json.dumps({"message": "An unexpected error occurred."}),
         }
 
 
@@ -66,12 +59,21 @@ def create_product(data: dict) -> dict:
     """
     Inserts a new product into the DynamoDB Products table.
 
-    :param data: Dictionary containing 'title', 'description', 'price'.
+    :param data: Dictionary containing 'title', 'description', 'price', 'count'.
 
     :return: The created product item.
     """
-    if "title" not in data or "price" not in data:
-        raise ValueError("Missing required fields: 'title' and 'price'.")
+    if "title" not in data or "price" not in data or "count" not in data:
+        raise ValueError("Missing required fields: 'title', 'count' or 'price'.")
+
+    if not isinstance(data["title"], str) or data["title"].strip() == "":
+        raise ValueError("Invalid title: Title cannot be empty.")
+
+    if not isinstance(data["price"], int) or data["price"] <= 0:
+        raise ValueError("Invalid price: Must be a positive integer.")
+
+    if not isinstance(data["count"], int) or data["count"] < 0:
+        raise ValueError("Invalid count: Must be a non-negative integer.")
 
     product_id = str(uuid.uuid4())
 
@@ -79,7 +81,7 @@ def create_product(data: dict) -> dict:
         "id": product_id,
         "title": data["title"],
         "description": data.get("description", ""),  # Default to empty string
-        "price": data["price"],  # Ensure price is an integer
+        "price": data["price"],
     }
 
     new_stock = {
@@ -103,8 +105,8 @@ def save_product_and_stock(product: dict[str, int], stock: dict[str, int]) -> No
     :raises ClientError: If DynamoDB transaction fails.
     """
     dynamodb.meta.client.transact_write_items(
-            TransactItems=[
-                {"Put": {"TableName": PRODUCTS_TABLE_NAME, "Item": product}},
-                {"Put": {"TableName": STOCKS_TABLE_NAME, "Item": stock}},
-            ]
-        )
+        TransactItems=[
+            {"Put": {"TableName": PRODUCTS_TABLE_NAME, "Item": product}},
+            {"Put": {"TableName": STOCKS_TABLE_NAME, "Item": stock}},
+        ]
+    )
